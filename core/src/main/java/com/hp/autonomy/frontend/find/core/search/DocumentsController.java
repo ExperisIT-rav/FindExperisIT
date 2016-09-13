@@ -163,6 +163,9 @@ public abstract class DocumentsController<S extends Serializable, Q extends Quer
                 .setHighlight(highlight)
                 .build();
 
+        for(S db: databases)
+            System.out.println("index = "+db);
+
         return documentsService.findSimilar(suggestRequest);
     }
 

@@ -84,6 +84,7 @@ define([
                 if (!documentModel){
                     documentModel = this.promotionsCollection.get(cid);
                 }
+                console.log(documentModel);
                 vent.navigateToSuggestRoute(documentModel);
             }
         },

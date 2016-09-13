@@ -31,6 +31,7 @@ define([
         },
 
         navigateToSuggestRoute: function(model) {
+        console.log(model.get('index'));
             this.navigate('find/search/suggest/' + suffixForDocument(model));
         },
 
