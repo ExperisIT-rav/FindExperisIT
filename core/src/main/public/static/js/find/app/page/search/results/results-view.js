@@ -77,16 +77,24 @@ define([
                 var model = collection.get(cid);
                 vent.navigateToDetailRoute(model);
             },
-            'click .similar-documents-trigger': function(event) {
+            'click .similar-CVs-trigger': function(event) {
                 event.stopPropagation();
                 var cid = $(event.target).closest('[data-cid]').data('cid');
                 var documentModel = this.documentsCollection.get(cid);
                 if (!documentModel){
                     documentModel = this.promotionsCollection.get(cid);
                 }
-                console.log(documentModel);
                 vent.navigateToSuggestRoute(documentModel);
-            }
+            },
+            'click .similar-Offers-trigger': function(event) {
+                event.stopPropagation();
+                var cid = $(event.target).closest('[data-cid]').data('cid');
+                var documentModel = this.documentsCollection.get(cid);
+                if (!documentModel){
+                    documentModel = this.promotionsCollection.get(cid);
+                }
+                vent.navigateToSuggestRoute(documentModel);
+           }
         },
 
         initialize: function(options) {

@@ -81,6 +81,8 @@ public abstract class DocumentsController<S extends Serializable, Q extends Quer
             @RequestParam(value = AUTO_CORRECT_PARAM, defaultValue = "true") final boolean autoCorrect
     ) throws E {
         final SearchRequest<S> searchRequest = parseRequestParamsToObject(text, resultsStart, maxResults, summary, index, fieldText, sort, minDate, maxDate, highlight, minScore, autoCorrect);
+        for(S db: index)
+            System.out.println("index = "+db);
         return documentsService.queryTextIndex(searchRequest);
     }
 
@@ -164,7 +166,7 @@ public abstract class DocumentsController<S extends Serializable, Q extends Quer
                 .build();
 
         for(S db: databases)
-            System.out.println("index = "+db);
+            System.out.println("databases = "+db);
 
         return documentsService.findSimilar(suggestRequest);
     }
