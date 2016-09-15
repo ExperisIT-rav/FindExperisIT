@@ -201,6 +201,7 @@ define([
 
             this.listenTo(this.documentsCollection, 'add', function(model) {
                 this.formatResult(model, false);
+                console.log(model);
             });
 
             this.listenTo(this.documentsCollection, 'sync reset', function() {

@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.*;
 
 @Controller
 @RequestMapping(DocumentsController.SEARCH_PATH)
@@ -81,9 +82,25 @@ public abstract class DocumentsController<S extends Serializable, Q extends Quer
             @RequestParam(value = AUTO_CORRECT_PARAM, defaultValue = "true") final boolean autoCorrect
     ) throws E {
         final SearchRequest<S> searchRequest = parseRequestParamsToObject(text, resultsStart, maxResults, summary, index, fieldText, sort, minDate, maxDate, highlight, minScore, autoCorrect);
-        for(S db: index)
-            System.out.println("index = "+db);
-        return documentsService.queryTextIndex(searchRequest);
+
+        Documents<R> res =  documentsService.queryTextIndex(searchRequest);
+        String ref = null;
+
+        List<R> lr = res.getDocuments();
+
+        System.out.println("count index begin = "+lr.size());
+
+        for (Iterator<R> it = lr.iterator(); it.hasNext(); ) {
+            R document = it.next();
+            ref = document.getReference();
+            if (!(ref.toLowerCase().endsWith(".docx") || ref.toLowerCase().endsWith(".doc") || ref.toLowerCase().endsWith(".pdf"))) {
+                it.remove();
+            }
+        }
+
+        System.out.println("count index end = "+lr.size());
+
+        return new Documents<R>(lr, lr.size(), res.getExpandedQuery(), res.getSuggestion(), res.getAutoCorrection(), res.getWarnings());
     }
 
     @SuppressWarnings("MethodWithTooManyParameters")
@@ -165,13 +182,25 @@ public abstract class DocumentsController<S extends Serializable, Q extends Quer
                 .setHighlight(highlight)
                 .build();
 
-        for(S db: databases)
-            System.out.println("databases = "+db);
 
         Documents<R> res =  documentsService.findSimilar(suggestRequest);
+        String ref = null;
 
+        List<R> lr = res.getDocuments();
 
-        return res;
+        System.out.println("count similar begin = "+lr.size());
+
+        for (Iterator<R> it = lr.iterator(); it.hasNext(); ) {
+            R document = it.next();
+            ref = document.getReference();
+            if (!(ref.toLowerCase().endsWith(".docx") || ref.toLowerCase().endsWith(".doc") || ref.toLowerCase().endsWith(".pdf"))) {
+                it.remove();
+            }
+        }
+
+        System.out.println("count similar end = "+lr.size());
+
+        return new Documents<R>(lr, lr.size(), res.getExpandedQuery(), res.getSuggestion(), res.getAutoCorrection(), res.getWarnings());
     }
 
     @RequestMapping(value = GET_DOCUMENT_CONTENT_PATH, method = RequestMethod.GET)
