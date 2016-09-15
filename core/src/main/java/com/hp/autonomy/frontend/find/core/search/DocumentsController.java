@@ -168,7 +168,10 @@ public abstract class DocumentsController<S extends Serializable, Q extends Quer
         for(S db: databases)
             System.out.println("databases = "+db);
 
-        return documentsService.findSimilar(suggestRequest);
+        Documents<R> res =  documentsService.findSimilar(suggestRequest);
+
+
+        return res;
     }
 
     @RequestMapping(value = GET_DOCUMENT_CONTENT_PATH, method = RequestMethod.GET)
