@@ -88,8 +88,6 @@ public abstract class DocumentsController<S extends Serializable, Q extends Quer
 
         List<R> lr = res.getDocuments();
 
-        System.out.println("count index begin = "+lr.size());
-
         for (Iterator<R> it = lr.iterator(); it.hasNext(); ) {
             R document = it.next();
             ref = document.getReference();
@@ -98,9 +96,7 @@ public abstract class DocumentsController<S extends Serializable, Q extends Quer
             }
         }
 
-        System.out.println("count index end = "+lr.size());
-
-        return new Documents<R>(lr, lr.size(), res.getExpandedQuery(), res.getSuggestion(), res.getAutoCorrection(), res.getWarnings());
+        return new Documents<R>(lr, res.getTotalResults(), res.getExpandedQuery(), res.getSuggestion(), res.getAutoCorrection(), res.getWarnings());
     }
 
     @SuppressWarnings("MethodWithTooManyParameters")
@@ -200,7 +196,7 @@ public abstract class DocumentsController<S extends Serializable, Q extends Quer
 
         System.out.println("count similar end = "+lr.size());
 
-        return new Documents<R>(lr, lr.size(), res.getExpandedQuery(), res.getSuggestion(), res.getAutoCorrection(), res.getWarnings());
+        return new Documents<R>(lr, res.getTotalResults(), res.getExpandedQuery(), res.getSuggestion(), res.getAutoCorrection(), res.getWarnings());
     }
 
     @RequestMapping(value = GET_DOCUMENT_CONTENT_PATH, method = RequestMethod.GET)
