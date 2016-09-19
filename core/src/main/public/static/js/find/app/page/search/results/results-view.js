@@ -23,6 +23,8 @@ define([
 
     var SCROLL_INCREMENT = 30;
     var INFINITE_SCROLL_POSITION_PIXELS = 500;
+    var MATCHING = 0;
+
 
     function infiniteScroll() {
         var resultsPresent = this.documentsCollection.size() > 0 && this.fetchStrategy.validateQuery(this.queryModel);
@@ -39,7 +41,7 @@ define([
 
     return Backbone.View.extend({
         //to be overridden
-        generateErrorMessage: null,
+		generateErrorMessage: null,
 
         template: _.template(template),
         loadingTemplate: _.template(loadingSpinnerTemplate)({i18n: i18n, large: true}),
@@ -84,6 +86,7 @@ define([
                 if (!documentModel){
                     documentModel = this.promotionsCollection.get(cid);
                 }
+				MATCHING = 1;
                 vent.navigateToSuggestRoute(documentModel);
             },
             'click .similar-Offers-trigger': function(event) {
@@ -93,6 +96,7 @@ define([
                 if (!documentModel){
                     documentModel = this.promotionsCollection.get(cid);
                 }
+				MATCHING = 2;			
                 vent.navigateToSuggestRoute(documentModel);
            }
         },
@@ -101,10 +105,21 @@ define([
             this.fetchStrategy = options.fetchStrategy;
 
             this.queryModel = options.queryModel;
+			//console.log("queryModel",this.queryModel)
+			//console.log("queryModel--indexes",this.queryModel.get('indexes'))
+			
+			if (MATCHING == 1) this.queryModel.set({indexes: ["CV","Recrutement","Freelance","Soustraitant","Taleo"]})
+			if (MATCHING == 2) this.queryModel.set({indexes: "Offres"})
+			MATCHING = 0;	
+			
+			//console.log("queryModel--indexes",this.queryModel.get('indexes'))
+			
             this.showPromotions = this.fetchStrategy.promotions(this.queryModel) && !options.hidePromotions;
             this.documentsCollection = options.documentsCollection;
+			//console.log("documentsCollection",this.documentsCollection)
 
             this.indexesCollection = options.indexesCollection;
+			//console.log("indexesCollection",this.indexesCollection)
             this.scrollModel = options.scrollModel;
 
             // Preview mode is enabled when a preview mode model is provided
@@ -112,6 +127,7 @@ define([
 
             if (this.indexesCollection) {
                 this.selectedIndexesCollection = options.queryState.selectedIndexes;
+				//console.log("selectedIndexesCollection",this.selectedIndexesCollection)
             }
             
             this.resultRenderer = new ResultRenderer({
@@ -201,7 +217,7 @@ define([
 
             this.listenTo(this.documentsCollection, 'add', function(model) {
                 this.formatResult(model, false);
-                console.log(model);
+                //console.log(model);
             });
 
             this.listenTo(this.documentsCollection, 'sync reset', function() {
@@ -296,6 +312,7 @@ define([
                         // Invalid databases have been deleted from IDOL; mark them as such in the indexes collection
                         this.documentsCollection.warnings.invalidDatabases.forEach(function(name) {
                             var indexModel = this.indexesCollection.findWhere({name: name});
+							//console.log("indexModel",indexModel)
 
                             if (indexModel) {
                                 indexModel.set('deleted', true);

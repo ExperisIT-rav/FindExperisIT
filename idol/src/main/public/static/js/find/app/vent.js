@@ -16,10 +16,15 @@ define([
     }
 
     function suffixForDocument(documentModel) {
-        return [documentModel.get('index'), documentModel.get('reference')]
+        
+		
+		return [documentModel.get('index'), documentModel.get('reference')]
             .map(encodeURIComponent)
             .join('/');
+
     }
+	
+	
 
     IdolVent.prototype = Object.create(VentConstructor.prototype);
 
@@ -34,10 +39,13 @@ define([
         console.log(model.get('index'));
             this.navigate('find/search/suggest/' + suffixForDocument(model));
         },
-
+		
+		
         addSuffixForDocument: function(model) {
             return suffixForDocument(model);
-        }
+        },
+		
+		
     });
 
     return new IdolVent(router);
