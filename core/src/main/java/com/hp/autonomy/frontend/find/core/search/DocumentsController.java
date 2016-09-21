@@ -82,21 +82,49 @@ public abstract class DocumentsController<S extends Serializable, Q extends Quer
             @RequestParam(value = AUTO_CORRECT_PARAM, defaultValue = "true") final boolean autoCorrect
     ) throws E {
         final SearchRequest<S> searchRequest = parseRequestParamsToObject(text, resultsStart, maxResults, summary, index, fieldText, sort, minDate, maxDate, highlight, minScore, autoCorrect);
+        Documents<R> results = documentsService.queryTextIndex(searchRequest);
 
-        Documents<R> res =  documentsService.queryTextIndex(searchRequest);
-        String ref = null;
+        try {
 
-        List<R> lr = res.getDocuments();
+            String ref = null;
+            S ind = null;
+            Set<GetContentRequestIndex<S>> getContentRequestIndexSet = new HashSet<GetContentRequestIndex<S>>();
+            GetContentRequest<S> getContentRequest = null;
+            List<R> partialResultsWithAllFields = null;
+            Documents<R> completeResults = null;
 
-        for (Iterator<R> it = lr.iterator(); it.hasNext(); ) {
-            R document = it.next();
-            ref = document.getReference();
-            if (!(ref.toLowerCase().endsWith(".docx") || ref.toLowerCase().endsWith(".doc") || ref.toLowerCase().endsWith(".pdf"))) {
-                it.remove();
+
+            List<R> lr = results.getDocuments();
+
+            for (Iterator<R> it = lr.iterator(); it.hasNext(); ) {
+                R document = it.next();
+                ref = document.getReference();
+                ind = (S) document.getIndex();
+                if (!(ref.toLowerCase().endsWith(".docx") || ref.toLowerCase().endsWith(".doc") || ref.toLowerCase().endsWith(".pdf"))) {
+                    it.remove();
+                } else {
+                    getContentRequestIndexSet.add(new GetContentRequestIndex<>(ind, Collections.singleton(ref)));
+                }
             }
-        }
 
-        return new Documents<R>(lr, res.getTotalResults(), res.getExpandedQuery(), res.getSuggestion(), res.getAutoCorrection(), res.getWarnings());
+            getContentRequest = new GetContentRequest<>(getContentRequestIndexSet, PrintParam.All.name());
+            partialResultsWithAllFields = documentsService.getDocumentContent(getContentRequest);
+
+            for (Iterator<R> it = partialResultsWithAllFields.iterator(); it.hasNext(); ) {
+                R document = it.next();
+                ref = document.getReference().toLowerCase();
+                if (!(ref.toLowerCase().endsWith(".docx") || ref.toLowerCase().endsWith(".doc") || ref.toLowerCase().endsWith(".pdf"))) {
+                    it.remove();
+                }
+            }
+
+            completeResults = new Documents<R>(partialResultsWithAllFields, partialResultsWithAllFields.size(), results.getExpandedQuery(), results.getSuggestion(), results.getAutoCorrection(), results.getWarnings());
+
+            return completeResults;
+        } catch (NullPointerException e) {
+            return new Documents<R>(new ArrayList<R>(), results.getTotalResults(), results.getExpandedQuery(), results.getSuggestion(), results.getAutoCorrection(), results.getWarnings());
+
+        }
     }
 
     @SuppressWarnings("MethodWithTooManyParameters")
@@ -183,8 +211,6 @@ public abstract class DocumentsController<S extends Serializable, Q extends Quer
         String ref = null;
 
         List<R> lr = res.getDocuments();
-
-        System.out.println("count similar begin = "+lr.size());
 
         for (Iterator<R> it = lr.iterator(); it.hasNext(); ) {
             R document = it.next();
